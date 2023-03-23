@@ -1,0 +1,12 @@
+{
+    "timestamp": "string",
+    "environment_name": "string",
+    "from_transfer": "boolean",
+    "media": "string",
+    "outcome": "string",
+    "queue_id":	"uid",
+    "site_id": "uid",
+    "team_id": "uid",
+    "wait_time": "integer",
+    "account_id": "uid"
+}
