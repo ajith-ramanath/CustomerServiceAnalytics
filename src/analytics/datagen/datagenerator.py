@@ -3,6 +3,7 @@ import random
 import uuid
 import time
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 
 # import the logging library
 import logging
@@ -110,61 +111,10 @@ def send_data(data, stream_name, partition_key):
 def usage():
     print('datagenerator.py --records <number of records> --pause <pause between records>')
 
-# main function
-def main():
-
-    # create an argument parser
-    parser = argparse.ArgumentParser()
-
-    # add the argument for the number of records to generate
-    parser.add_argument('--records', type=int, default=1000)
-
-    # add the argument for the pause between records
-    parser.add_argument('--pause', type=int, default=0)
-
-    # add the argument for the log level
-    parser.add_argument('--log-level', type=str, default='INFO')
-
-    # add the argument for the log file
-    parser.add_argument('--log-file', type=str, default='datagenerator.log')
-
-    # add the argument for the log format
-    parser.add_argument('--log-format', type=str, default='%(asctime)s %(levelname)s %(message)s')
-
-    # add the argument for the log date format
-    parser.add_argument('--log-date-format', type=str, default='%Y-%m-%d %H:%M:%S')
-
-    # add an argument for stream name
-    parser.add_argument('--stream-name', type=str, default='csa-stream')
-
-    # add an argument for partition key
-    parser.add_argument('--partition-key', type=str, default='account_id')
-
-    # add an argument for the schema file
-    parser.add_argument('--schema-file', type=str, default='./schema/acceptance.json')
-
-    # parse the arguments
-    args = parser.parse_args()
-
-    # update the code below to use the arguments
-    # set the log level
-    logging.basicConfig(filename=args.log_file, level=args.log_level, format=args.log_format, datefmt=args.log_date_format)
-
+# function for the thread pool
+def execute(args, account_ids, site_ids, queue_ids):
     # create a counter for the number of records sent
     records_sent = 0
-
-    # generate a fixed list of account ids
-    account_ids = create_account_ids()
-
-    # generate a fixed list of site ids for each account
-    site_ids = create_site_ids(account_ids)
-
-    # extract the site ids from the site_ids dictionary
-    site_ids_list = [site_id for account_id in site_ids for site_id in site_ids[account_id]]
-    logging.debug(site_ids_list)
-
-    # generate a fixed list of queue ids for each site
-    queue_ids = create_queue_ids(site_ids_list)
 
     # create a loop that generates data and sends it to AWS Kinesis
     while records_sent < args.records:
@@ -185,9 +135,67 @@ def main():
         # increment the counter
         records_sent += 1
 
-        # pause for a few seconds
-        # time.sleep(args.pause)
 
+# main function
+def main():
+
+    # create an argument parser
+    parser = argparse.ArgumentParser()
+
+    # add the argument for the number of records to generate
+    parser.add_argument('--records', type=int, default=1000)
+
+    # add the argument for the pause between records
+    parser.add_argument('--pause', type=int, default=0)
+
+    # add the argument for the log level
+    parser.add_argument('--log-level', type=str, default='INFO')
+
+    # add the argument for the log file
+    parser.add_argument('--log-file', type=str, default='datagenerator.log')
+
+    # add the argument for the log format
+    parser.add_argument('--log-format', type=str, default='%(asctime)s %(thread)d %(levelname)s %(message)s')
+
+    # add the argument for the log date format
+    parser.add_argument('--log-date-format', type=str, default='%Y-%m-%d %H:%M:%S')
+
+    # add an argument for stream name
+    parser.add_argument('--stream-name', type=str, default='csa-stream')
+
+    # add an argument for partition key
+    parser.add_argument('--partition-key', type=str, default='account_id')
+
+    # add an argument for the schema file
+    parser.add_argument('--schema-file', type=str, default='./schema/acceptance.json')
+
+    # add an argument for the number of threads
+    parser.add_argument('--threads', type=int, default=50)
+
+    # parse the arguments
+    args = parser.parse_args()
+
+    # update the code below to use the arguments
+    # set the log level
+    logging.basicConfig(filename=args.log_file, level=args.log_level, format=args.log_format, datefmt=args.log_date_format)
+
+    # generate a fixed list of account ids
+    account_ids = create_account_ids()
+
+    # generate a fixed list of site ids for each account
+    site_ids = create_site_ids(account_ids)
+
+    # extract the site ids from the site_ids dictionary
+    site_ids_list = [site_id for account_id in site_ids for site_id in site_ids[account_id]]
+    logging.debug(site_ids_list)
+
+    # generate a fixed list of queue ids for each site
+    queue_ids = create_queue_ids(site_ids_list)
+
+     # Make things concurrent now. Implement thread pool
+    futures = []
+    with ThreadPoolExecutor(max_workers=args.threads) as executor:
+        futures.append(executor.submit(execute, args, account_ids, site_ids, queue_ids))
 
 # call the main function
 if __name__ == '__main__':
