@@ -44,23 +44,10 @@ def create_queue_ids(site_ids):
     return queue_ids
 
 # create a function that generates a dictionary of random data with the schema in ./schema/acceptance.json
-def generate_data(schema_file):
+def generate_data(schema_file, account_ids, site_ids, queue_ids):
     # create a dictionary to hold the data
     data = {}
-
-    # generate a fixed list of account ids
-    account_ids = create_account_ids()
-
-    # generate a fixed list of site ids for each account
-    site_ids = create_site_ids(account_ids)
-
-    # extract the site ids from the site_ids dictionary
-    site_ids_list = [site_id for account_id in site_ids for site_id in site_ids[account_id]]
-    logging.debug(site_ids_list)
-
-    # generate a fixed list of queue ids for each site
-    queue_ids = create_queue_ids(site_ids_list)
-
+    
     # open the schema file and read the contents
     with open(schema_file, 'r') as s:
         schema = parse_json(s.read())
@@ -166,11 +153,27 @@ def main():
     # create a counter for the number of records sent
     records_sent = 0
 
+    # generate a fixed list of account ids
+    account_ids = create_account_ids()
+
+    # generate a fixed list of site ids for each account
+    site_ids = create_site_ids(account_ids)
+
+    # extract the site ids from the site_ids dictionary
+    site_ids_list = [site_id for account_id in site_ids for site_id in site_ids[account_id]]
+    logging.debug(site_ids_list)
+
+    # generate a fixed list of queue ids for each site
+    queue_ids = create_queue_ids(site_ids_list)
+
     # create a loop that generates data and sends it to AWS Kinesis
     while records_sent < args.records:
         # generate some data
         data = generate_data(
-            args.schema_file
+            args.schema_file,
+            account_ids,
+            site_ids,
+            queue_ids
         )
 
         # send the data
