@@ -74,9 +74,9 @@ def generate_data(schema_file, account_ids, site_ids, queue_ids):
         elif key == 'media':
             data[key] = random.choice(['phone', 'chat', 'other'])
         elif key == 'outcome':
-            data[key] = random.choice(['finished', 'abandoned', 'escalated', 'transferred'])
+            data[key] = random.choice(['finished', 'escalated', 'transferred'])
         elif key == 'environment_name':
-            data[key] = random.choice(['acceptance', 'other'])
+            data[key] = random.choice(['acceptance'])
         else:
             logging.warning("Unknown key or value - %s:%s.", key, value)
 
