@@ -1,6 +1,18 @@
-Type: AWS::Kinesis::Stream
-Properties: 
-  Name: analytics-stream
-  RetentionPeriodHours: 168
-  ShardCount: 3
-  StreamModeDetails: on-demand
+Parameters:
+  StreamName:
+    Type: String
+    Default: YourKinesisStreamName
+  ShardCount:
+    Type: Number
+    Default: 1
+  RetentionPeriodHours:
+    Type: Number
+    Default: 24
+
+Resources:
+  KinesisStream:
+    Type: AWS::Kinesis::Stream
+    Properties: 
+      Name: !Ref StreamName
+      RetentionPeriodHours: !Ref RetentionPeriodHours
+      ShardCount: !Ref ShardCount

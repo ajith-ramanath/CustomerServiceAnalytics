@@ -15,28 +15,82 @@ from botocore.exceptions import ClientError
 def parse_json(json_string):
     return json.loads(json_string)
 
+# create a function to create a list of account ids
+def create_account_ids():
+    account_ids = []
+    for i in range(0, 2):
+        account_ids.append(str(uuid.uuid4()))
+    logging.debug(account_ids)
+    return account_ids
+
+# create a function to create a list of site ids for each account
+def create_site_ids(account_ids):
+    site_ids = {}
+    for account_id in account_ids:
+        site_ids[account_id] = []
+        for i in range(0, 2):
+            site_ids[account_id].append(str(uuid.uuid4()))
+    logging.debug(site_ids)
+    return site_ids
+
+# create a function to create a list of queue ids from a list of site ids
+def create_queue_ids(site_ids):
+    queue_ids = {}
+    for site_id in site_ids:
+        queue_ids[site_id] = []
+        for i in range(0, 2):
+            queue_ids[site_id].append(str(uuid.uuid4()))
+    logging.debug(queue_ids)
+    return queue_ids
+
 # create a function that generates a dictionary of random data with the schema in ./schema/acceptance.json
-def generate_data():
+def generate_data(schema_file):
     # create a dictionary to hold the data
     data = {}
 
+    # generate a fixed list of account ids
+    account_ids = create_account_ids()
+
+    # generate a fixed list of site ids for each account
+    site_ids = create_site_ids(account_ids)
+
+    # extract the site ids from the site_ids dictionary
+    site_ids_list = [site_id for account_id in site_ids for site_id in site_ids[account_id]]
+    logging.debug(site_ids_list)
+
+    # generate a fixed list of queue ids for each site
+    queue_ids = create_queue_ids(site_ids_list)
+
     # open the schema file and read the contents
-    with open('./schema/acceptance.json', 'r') as schema_file:
-        schema = parse_json(schema_file.read())
+    with open(schema_file, 'r') as s:
+        schema = parse_json(s.read())
         logging.debug(schema)
 
     # iterate over the schema and generate random data
     for key, value in schema.items():
-        if value == 'int':
-            data[key] = random.randint(0, 100)
-        elif value == 'float':
-            data[key] = random.random()
-        elif value == 'string':
-            data[key] = ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(10))
+        if value == 'integer':
+            data[key] = random.randint(1, 20)
+        elif value == 'timestamp':
+            data[key] = time.strftime('%Y-%m-%d %H:%M:%S')
         elif value == 'boolean':
-            data[key] = random.choice([True, False])
-        elif value == 'uid':
-            data[key] = str(uuid.uuid4())
+            data[key] = bool(random.getrandbits(1))
+        elif key == 'account_id':
+            # random selection from a list of account ids
+            data[key] = random.choice(account_ids)
+        elif key == 'site_id':
+            # random selection from a list of site ids
+            data[key] = random.choice(site_ids[data['account_id']])
+        elif key == 'queue_id':
+            # random selection from a list of queue ids
+            data[key] = random.choice(queue_ids[data['site_id']])
+        elif key == 'media':
+            data[key] = random.choice(['phone', 'chat', 'other'])
+        elif key == 'outcome':
+            data[key] = random.choice(['finished', 'abandoned', 'escalated', 'transferred'])
+        elif key == 'environment_name':
+            data[key] = random.choice(['acceptance', 'other'])
+        else:
+            logging.warning("Unknown key or value - %s:%s.", key, value)
 
     # return the data
     logging.debug(data)
@@ -79,7 +133,7 @@ def main():
     parser.add_argument('--records', type=int, default=1000)
 
     # add the argument for the pause between records
-    parser.add_argument('--pause', type=int, default=5)
+    parser.add_argument('--pause', type=int, default=0)
 
     # add the argument for the log level
     parser.add_argument('--log-level', type=str, default='INFO')
@@ -94,7 +148,7 @@ def main():
     parser.add_argument('--log-date-format', type=str, default='%Y-%m-%d %H:%M:%S')
 
     # add an argument for stream name
-    parser.add_argument('--stream-name', type=str, default='analytics-stream')
+    parser.add_argument('--stream-name', type=str, default='csa-stream')
 
     # add an argument for partition key
     parser.add_argument('--partition-key', type=str, default='account_id')
@@ -129,7 +183,7 @@ def main():
         records_sent += 1
 
         # pause for a few seconds
-        time.sleep(args.pause)
+        # time.sleep(args.pause)
 
 
 # call the main function
