@@ -77,6 +77,9 @@ def generate_data(schema_file, account_ids, site_ids, queue_ids):
             data[key] = random.choice(['finished', 'escalated', 'transferred'])
         elif key == 'environment_name':
             data[key] = random.choice(['acceptance'])
+        # uid
+        elif key == 'uid':
+            data[key] = str(uuid.uuid4())
         else:
             logging.warning("Unknown key or value - %s:%s.", key, value)
 
