@@ -19,7 +19,7 @@ def parse_json(json_string):
 # create a function to create a list of account ids
 def create_account_ids():
     account_ids = []
-    for i in range(0, 2):
+    for i in range(0, 5):
         account_ids.append(str(uuid.uuid4()))
     logging.debug(account_ids)
     return account_ids
@@ -29,7 +29,7 @@ def create_site_ids(account_ids):
     site_ids = {}
     for account_id in account_ids:
         site_ids[account_id] = []
-        for i in range(0, 2):
+        for i in range(0, 5):
             site_ids[account_id].append(str(uuid.uuid4()))
     logging.debug(site_ids)
     return site_ids
@@ -39,7 +39,7 @@ def create_queue_ids(site_ids):
     queue_ids = {}
     for site_id in site_ids:
         queue_ids[site_id] = []
-        for i in range(0, 2):
+        for i in range(0, 10):
             queue_ids[site_id].append(str(uuid.uuid4()))
     logging.debug(queue_ids)
     return queue_ids
