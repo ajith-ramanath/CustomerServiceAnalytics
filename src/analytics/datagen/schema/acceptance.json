@@ -1,12 +1,12 @@
 {
     "timestamp": "timestamp",
-    "account_id": "uid",
-    "site_id": "uid",
-    "queue_id":	"uid",
+    "account_id": "special",
+    "site_id": "special",
+    "queue_id":	"special",
     "environment_name": "string",
     "from_transfer": "boolean",
-    "media": "string",
-    "outcome": "string",
-    "team_id": "uid",
+    "media": "special",
+    "outcome": "special",
+    "team_id": "uuid",
     "wait_time": "integer"
 }

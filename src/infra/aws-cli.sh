@@ -1,8 +1,8 @@
 #!/bin/bash
 
 aws cloudformation create-stack \
---stack-name csa-stack-ajithr-5 \
+--stack-name csa-stack-ajithr-6 \
 --template-body file://./setup.yaml \
---parameters ParameterKey=StreamName,ParameterValue=csa-stream-4 \
+--parameters ParameterKey=StreamName,ParameterValue=csa-stream-5 \
              ParameterKey=ShardCount,ParameterValue=4 \
              ParameterKey=RetentionPeriodHours,ParameterValue=24

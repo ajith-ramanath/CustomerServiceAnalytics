@@ -62,23 +62,24 @@ def generate_data(schema_file, account_ids, site_ids, queue_ids):
             data[key] = time.strftime('%Y-%m-%d %H:%M:%S')
         elif value == 'boolean':
             data[key] = bool(random.getrandbits(1))
-        elif key == 'account_id':
-            # random selection from a list of account ids
-            data[key] = random.choice(account_ids)
-        elif key == 'site_id':
-            # random selection from a list of site ids
-            data[key] = random.choice(site_ids[data['account_id']])
-        elif key == 'queue_id':
-            # random selection from a list of queue ids
-            data[key] = random.choice(queue_ids[data['site_id']])
-        elif key == 'media':
-            data[key] = random.choice(['phone', 'chat', 'other'])
-        elif key == 'outcome':
-            data[key] = random.choice(['finished', 'escalated', 'transferred'])
-        elif key == 'environment_name':
-            data[key] = random.choice(['acceptance'])
+        elif value == 'special':
+            if key == 'account_id':
+                # random selection from a list of account ids
+                data[key] = random.choice(account_ids)
+            elif key == 'site_id':
+                # random selection from a list of site ids
+                data[key] = random.choice(site_ids[data['account_id']])
+            elif key == 'queue_id':
+                # random selection from a list of queue ids
+                data[key] = random.choice(queue_ids[data['site_id']])
+            elif key == 'media':
+                data[key] = random.choice(['phone', 'chat', 'other'])
+            elif key == 'outcome':
+                data[key] = random.choice(['finished', 'escalated', 'transferred'])
+            elif key == 'environment_name':
+                data[key] = random.choice(['acceptance'])
         # uid
-        elif value == 'uid':
+        elif value == 'uuid':
             data[key] = str(uuid.uuid4())
         else:
             logging.warning("Unknown key or value - %s:%s.", key, value)
