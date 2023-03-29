@@ -131,10 +131,10 @@ def execute(args, account_ids, site_ids, queue_ids):
         )
 
         # send the data
-        response = send_data(data, args.stream_name, args.partition_key)
+        #response = send_data(data, args.stream_name, args.partition_key)
 
         # log the response
-        logging.info(response)
+        #logging.info(response)
 
         # increment the counter
         records_sent += 1

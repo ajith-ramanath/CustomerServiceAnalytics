@@ -3,7 +3,7 @@
     "account_id": "special",
     "site_id": "special",
     "queue_id":	"special",
-    "environment_name": "string",
+    "environment_name": "special",
     "from_transfer": "boolean",
     "media": "special",
     "outcome": "special",
