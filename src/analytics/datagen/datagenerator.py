@@ -88,8 +88,33 @@ def generate_data(schema_file, account_ids, site_ids, queue_ids):
     logging.debug(data)
     return data
 
+
+
+# create a function that connects to AWS MSK and sends the data
+# def send_data_msk(data, stream_name, partition_key):
+#         # create a client for the kinesis service
+#         client = boto3.client('kafka')
+#         logging.debug(client)
+    
+#         # create a json string from the data
+#         json_string = json.dumps(data)
+    
+#         response = None
+#         try:
+#             response = client.send_command(
+#                 ClusterArn=stream_name, 
+#                 Command='SEND-RAW-MESSAGE',
+#                 Data=json_string, 
+#                 PartitionKey=partition_key)
+#         except ClientError as e:
+#             print(e)
+#             logging.exception("Couldn't put record in stream %s.", stream_name)
+#             raise
+#         logging.debug(response)
+#         return response
+
 # create a function that connects to AWS Kinesis and sends the data
-def send_data(data, stream_name, partition_key):
+def send_data_kinesis(data, stream_name, partition_key):
 
     # create a client for the kinesis service
     client = boto3.client('kinesis')
@@ -113,7 +138,14 @@ def send_data(data, stream_name, partition_key):
 
 # create a usage function
 def usage():
-    print('datagenerator.py --records <number of records> --pause <pause between records>')
+    print("""
+            Usage: python datagenerator.py 
+                            --stream-type kinesis 
+                            --stream-name <stream-name> 
+                            --partition-key <partition-key> 
+                            --schema-file <schema-file> 
+                            --records <number-of-records>"
+        """)
 
 # function for the thread pool
 def execute(args, account_ids, site_ids, queue_ids):
@@ -130,8 +162,14 @@ def execute(args, account_ids, site_ids, queue_ids):
             queue_ids
         )
 
-        # send the data
-        response = send_data(data, args.stream_name, args.partition_key)
+        # Kinesis or MSK?
+        if args.stream_type == 'kinesis':
+            # send the data
+            response = send_data_kinesis(data, args.stream_name, args.partition_key)
+        elif args.stream_type == 'msk':
+            # send the data
+            #response = send_data_msk(data, args.stream_name, args.partition_key)
+            pass
 
         # log the response
         logging.info(response)
@@ -175,6 +213,9 @@ def main():
 
     # add an argument for the number of threads
     parser.add_argument('--threads', type=int, default=100)
+
+    # add an argument for the stream type
+    parser.add_argument('--stream-type', type=str, default='kinesis')
 
     # parse the arguments
     args = parser.parse_args()
