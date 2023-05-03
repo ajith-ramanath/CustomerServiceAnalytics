@@ -113,11 +113,16 @@ def generate_data(schema_file, account_ids, site_ids, queue_ids):
 #         logging.debug(response)
 #         return response
 
-# create a function that connects to AWS Kinesis and sends the data
-def send_data_kinesis(data, stream_name, partition_key):
 
-    # create a client for the kinesis service
-    client = boto3.client('kinesis')
+# create a function that connects to AWS Kinesis and sends the data
+def send_data_kinesis(data, stream_name, partition_key, region_name):
+
+    # Create a kinesis client with the cluster arn
+    client = boto3.client(
+        'kinesis',
+        region_name=region_name
+    )
+
     logging.debug(client)
 
     # create a json string from the data
@@ -140,11 +145,12 @@ def send_data_kinesis(data, stream_name, partition_key):
 def usage():
     print("""
             Usage: python datagenerator.py 
-                            --stream-type kinesis 
+                            --stream-type kinesis
                             --stream-name <stream-name> 
                             --partition-key <partition-key> 
                             --schema-file <schema-file> 
                             --records <number-of-records>"
+                            --region-name <region-name>
         """)
 
 # function for the thread pool
@@ -165,7 +171,7 @@ def execute(args, account_ids, site_ids, queue_ids):
         # Kinesis or MSK?
         if args.stream_type == 'kinesis':
             # send the data
-            response = send_data_kinesis(data, args.stream_name, args.partition_key)
+            response = send_data_kinesis(data, args.stream_name, args.partition_key, args.region_name)
         elif args.stream_type == 'msk':
             # send the data
             #response = send_data_msk(data, args.stream_name, args.partition_key)
@@ -217,6 +223,9 @@ def main():
     # add an argument for the stream type
     parser.add_argument('--stream-type', type=str, default='kinesis')
 
+    # add an argument for the region name
+    parser.add_argument('--region-name', type=str, default='us-east-1')
+
     # parse the arguments
     args = parser.parse_args()
 
@@ -241,6 +250,11 @@ def main():
     futures = []
     with ThreadPoolExecutor(max_workers=args.threads) as executor:
         futures.append(executor.submit(execute, args, account_ids, site_ids, queue_ids))
+
+    # wait for the futures to complete
+    for future in futures:
+        future.result()
+
 
 # call the main function
 if __name__ == '__main__':
