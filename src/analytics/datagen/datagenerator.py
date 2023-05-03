@@ -3,6 +3,7 @@ import random
 import uuid
 import time
 import argparse
+import sys
 from concurrent.futures import ThreadPoolExecutor
 
 # import the logging library
@@ -143,15 +144,14 @@ def send_data_kinesis(data, stream_name, partition_key, region_name):
 
 # create a usage function
 def usage():
-    print("""
-            Usage: python datagenerator.py 
-                            --stream-type kinesis
-                            --stream-name <stream-name> 
-                            --partition-key <partition-key> 
-                            --schema-file <schema-file> 
-                            --records <number-of-records>"
-                            --region-name <region-name>
-        """)
+    print("Usage: python3 generate_data.py --stream-type <kinesis|msk> \
+                                           --stream-name <stream name> \
+                                           --partition-key <partition key> \
+                                           --region-name <region name> \
+                                           --schema-file <schema file> \
+                                           --records <number of records> \
+                                           --threads <number of threads>")
+    exit(1)
 
 # function for the thread pool
 def execute(args, account_ids, site_ids, queue_ids):
@@ -225,6 +225,10 @@ def main():
 
     # add an argument for the region name
     parser.add_argument('--region-name', type=str, default='us-east-1')
+
+    # print the usage if help is requested
+    if '--help' in sys.argv or '-h' in sys.argv:
+        usage()
 
     # parse the arguments
     args = parser.parse_args()
