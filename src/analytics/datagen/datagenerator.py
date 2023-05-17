@@ -144,7 +144,7 @@ def send_data_kinesis(data, stream_name, partition_key, region_name):
 
 # create a usage function
 def usage():
-    print("Usage: python3 datagenerator.py --stream-type <kinesis|msk> \
+    print("Usage: python3 datagenerator.py --stream-type <kinesis> \
                                            --stream-name <stream name> \
                                            --partition-key <partition key> \
                                            --region-name <region name> \
